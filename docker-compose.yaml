@@ -1,18 +1,21 @@
-version: '3.8'
+networks:
+  techshop_shared-network:
+    driver: bridge
+    name: techshop_shared-network
 
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    networks:
-      - broker-kafka
+    container_name: techshop-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - techshop_shared-network
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    networks:
-      - broker-kafka
+    container_name: techshop-kafka
     depends_on:
       - zookeeper
     ports:
@@ -24,30 +27,32 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - techshop_shared-network
 
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
-    networks:
-      - broker-kafka
+    container_name: techshop-kafdrop
     depends_on:
       - kafka
     ports:
       - 19000:9000
     environment:
       KAFKA_BROKERCONNECT: kafka:29093
+    networks:
+      - techshop_shared-network
 
   techshop-message-producer:
     image: openjdk:21-slim
     build:
       context: .
       dockerfile: Dockerfile
-    networks:
-      - broker-kafka
+    container_name: techshop-message-producer
     depends_on:
       - kafka
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29093
-
-networks:
-  broker-kafka:
-    driver: bridge
+    ports:
+      - 8080:8080
+    networks:
+      - techshop_shared-network

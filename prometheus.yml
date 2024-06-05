@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'techshop-message-producer'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['techshop-message-producer:8080']

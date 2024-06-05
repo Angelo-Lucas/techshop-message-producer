@@ -1,9 +1,9 @@
 package com.techshop.techshopmessageproducer.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -44,6 +44,8 @@ public class KafkaProducer {
     }
 
     @Scheduled(fixedRate = 1000)
+    @Timed(value = "kafka.produce.time", description = "Time taken to produce messages")
+    @Counted(value = "kafka.produce.count", description = "Number of produced messages")
     public void produce() {
         try {
             Map<String, Object> messageMap = generateRandomMessage();
